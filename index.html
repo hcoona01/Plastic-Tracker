@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlasticPulse — Track Your Impact</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ocean: #0a2a4a;
+      --deep: #041525;
+      --teal: #0d7377;
+      --aqua: #14a8b0;
+      --foam: #a8e6cf;
+      --sand: #f4e4bc;
+      --coral: #ff6b6b;
+      --plastic-yellow: #ffd166;
+      --white: #f0f8ff;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--deep);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    .cursor {
+      width: 12px;
+      height: 12px;
+      background: var(--aqua);
+      border-radius: 50%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 10002;
+      transition: transform 0.15s ease;
+      mix-blend-mode: screen;
+    }
+
+    .cursor-ring {
+      width: 36px;
+      height: 36px;
+      border: 1.5px solid rgba(20, 168, 176, 0.5);
+      border-radius: 50%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 10001;
+      transition: all 0.3s ease;
+    }
+
+    /* HERO */
+    #hero {
+      height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .ocean-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #041525 0%, #0a2a4a 40%, #0d4f6e 70%, #0d7377 100%);
+    }
+
+    .waves-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 45%;
+    }
+
+    .particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+      animation: drift linear infinite;
+    }
+
+    @keyframes drift {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.15;
+      }
+
+      90% {
+        opacity: 0.1;
+      }
+
+      100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.3s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      font-weight: 900;
+      line-height: 0.9;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.6s forwards;
+    }
+
+    .hero-title span {
+      display: block;
+      background: linear-gradient(135deg, var(--aqua), var(--foam), var(--plastic-yellow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title .sub {
+      font-style: italic;
+      font-size: clamp(1.5rem, 4vw, 3.5rem);
+      font-weight: 400;
+      background: linear-gradient(135deg, #a8e6cf, #7ed8e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      font-weight: 300;
+      max-width: 520px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      color: rgba(240, 248, 255, 0.7);
+      opacity: 0;
+      animation: fadeUp 1s ease 0.9s forwards;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, var(--teal), var(--aqua));
+      color: white;
+      padding: 16px 40px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      cursor: none;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 40px rgba(13, 115, 119, 0.5);
+      opacity: 0;
+      animation: fadeUp 1s ease 1.2s forwards;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 60px rgba(20, 168, 176, 0.7);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeUp 1s ease 1.8s forwards;
+    }
+
+    .scroll-indicator span {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(240, 248, 255, 0.4);
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(180deg, rgba(20, 168, 176, 0.8), transparent);
+      animation: scrollPulse 2s ease infinite;
+    }
+
+    @keyframes scrollPulse {
+
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* STATS BAR */
+    #stats-bar {
+      background: rgba(13, 115, 119, 0.12);
+      border-top: 1px solid rgba(20, 168, 176, 0.2);
+      border-bottom: 1px solid rgba(20, 168, 176, 0.2);
+      padding: 36px 0;
+    }
+
+    .stats-row {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 0 20px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--aqua), var(--foam));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: rgba(240, 248, 255, 0.45);
+      margin-top: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    /* TRACKER SECTION */
+    #tracker {
+      padding: 120px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-title em {
+      font-style: italic;
+      color: var(--aqua);
+    }
+
+    .tracker-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 40px;
+      margin-top: 60px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .tracker-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .log-card,
+    .summary-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(20, 168, 176, 0.2);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .log-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--aqua), transparent);
+    }
+
+    .log-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 10px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(20, 168, 176, 0.25);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+      cursor: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      border-color: var(--aqua);
+      background: rgba(20, 168, 176, 0.1);
+      box-shadow: 0 0 0 3px rgba(20, 168, 176, 0.15);
+    }
+
+    .form-select option {
+      background: var(--ocean);
+    }
+
+    .qty-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .item-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      background: rgba(20, 168, 176, 0.1);
+      border: 1px solid rgba(20, 168, 176, 0.25);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      cursor: none;
+      transition: all 0.2s ease;
+      color: rgba(240, 248, 255, 0.65);
+      white-space: nowrap;
+    }
+
+    .chip:hover,
+    .chip.active {
+      background: rgba(20, 168, 176, 0.28);
+      border-color: var(--aqua);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    .btn-log {
+      width: 100%;
+      background: linear-gradient(135deg, var(--teal), var(--aqua));
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      color: white;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: none;
+      margin-top: 12px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(13, 115, 119, 0.4);
+    }
+
+    .btn-log:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(20, 168, 176, 0.5);
+    }
+
+    .btn-log:active {
+      transform: translateY(0);
+    }
+
+    /* SUMMARY CARD */
+    .impact-score {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .score-ring {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+
+    .score-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring-track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.05);
+      stroke-width: 8;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 440;
+      stroke-dashoffset: 440;
+      transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .score-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--aqua), var(--foam));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .score-unit {
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      color: rgba(240, 248, 255, 0.4);
+      text-transform: uppercase;
+    }
+
+    .impact-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+    }
+
+    .impact-sub {
+      font-size: 0.8rem;
+      color: rgba(240, 248, 255, 0.5);
+    }
+
+    .breakdown-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 20px;
+    }
+
+    .breakdown-item {
+      margin-bottom: 16px;
+    }
+
+    .breakdown-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .breakdown-name {
+      font-size: 0.9rem;
+    }
+
+    .breakdown-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--aqua);
+    }
+
+    .bar-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--teal), var(--aqua));
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+
+    /* HISTORY */
+    #history {
+      padding: 80px 20px 120px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
+      margin-top: 60px;
+    }
+
+    @media (max-width: 900px) {
+      .history-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(20, 168, 176, 0.2);
+      border-radius: 24px;
+      padding: 40px;
+      backdrop-filter: blur(20px);
+    }
+
+    .chart-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      margin-bottom: 24px;
+    }
+
+    .chart-area {
+      position: relative;
+      height: 200px;
+      width: 100%;
+    }
+
+    .chart-area canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .log-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .log-list::-webkit-scrollbar-thumb {
+      background: var(--teal);
+      border-radius: 100px;
+    }
+
+    .log-entry {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 12px 16px;
+      transition: all 0.2s ease;
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .log-entry:hover {
+      border-color: rgba(20, 168, 176, 0.3);
+      background: rgba(20, 168, 176, 0.06);
+    }
+
+    .log-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--teal), var(--aqua));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .log-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .log-item-name {
+      font-size: 0.88rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .log-item-date {
+      font-size: 0.72rem;
+      color: rgba(240, 248, 255, 0.38);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .log-item-weight {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--aqua);
+      flex-shrink: 0;
+    }
+
+    .log-delete {
+      background: none;
+      border: none;
+      color: rgba(240, 248, 255, 0.2);
+      cursor: none;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    .log-delete:hover {
+      color: var(--coral);
+    }
+
+    /* TIPS */
+    #tips {
+      padding: 80px 20px 120px;
+      background: linear-gradient(180deg, transparent, rgba(13, 115, 119, 0.08), transparent);
+    }
+
+    .tips-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 60px;
+    }
+
+    .tip-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(20, 168, 176, 0.15);
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tip-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(20, 168, 176, 0.08), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .tip-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(20, 168, 176, 0.35);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .tip-card:hover::after {
+      opacity: 1;
+    }
+
+    .tip-emoji {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .tip-card h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .tip-card p {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: rgba(240, 248, 255, 0.6);
+    }
+
+    .tip-impact {
+      display: inline-block;
+      margin-top: 16px;
+      background: rgba(20, 168, 176, 0.15);
+      border: 1px solid rgba(20, 168, 176, 0.3);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      color: var(--aqua);
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 60px 20px 40px;
+      border-top: 1px solid rgba(20, 168, 176, 0.1);
+    }
+
+    footer .footer-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--aqua), var(--foam));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    footer p {
+      font-size: 0.8rem;
+      color: rgba(240, 248, 255, 0.3);
+      letter-spacing: 0.5px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: linear-gradient(135deg, var(--teal), var(--aqua));
+      color: white;
+      padding: 14px 28px;
+      border-radius: 100px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      box-shadow: 0 8px 30px rgba(13, 115, 119, 0.5);
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* PERIOD TABS */
+    .period-tabs {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 100px;
+      padding: 4px;
+      margin-bottom: 28px;
+      gap: 4px;
+    }
+
+    .period-tab {
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      border: none;
+      background: none;
+      color: rgba(240, 248, 255, 0.45);
+      cursor: none;
+      transition: all 0.3s ease;
+    }
+
+    .period-tab.active {
+      background: linear-gradient(135deg, var(--teal), var(--aqua));
+      color: white;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(240, 248, 255, 0.3);
+    }
+
+    .empty-state span {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 0.85rem;
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--deep);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--teal);
+      border-radius: 100px;
+    }
+
+    /* AUTH OVERLAY */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--deep);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+      overflow-y: auto;
+      padding: 20px;
+      cursor: none;
+    }
+    .auth-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    body.logged-out {
+      overflow: hidden;
+    }
+    .auth-card {
+      background: rgba(4, 21, 37, 0.95);
+      border: 1px solid rgba(20, 168, 176, 0.4);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      backdrop-filter: blur(20px);
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+    .auth-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, var(--aqua), var(--foam));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .auth-form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .auth-action-link {
+      font-size: 0.8rem;
+      color: var(--aqua);
+      cursor: none;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      padding: 0;
+    }
+    .auth-action-link:hover {
+      color: var(--foam);
+    }
+    .auth-divider {
+      margin: 32px 0 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    .auth-divider span {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(4, 21, 37, 1);
+      padding: 0 12px;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 2px;
+    }
+    .btn-google {
+      width: 100%;
+      background: white;
+      color: #333;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .btn-google:hover {
+      background: #f8f8f8;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+    #authErrorMsg {
+      color: var(--coral);
+      margin-top: 16px;
+      font-size: 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 20px;
+    }
+
+    .btn-logout-corner {
+      position: fixed;
+      top: 30px;
+      right: 40px;
+      background: rgba(20, 168, 176, 0.15);
+      border: 1px solid rgba(20, 168, 176, 0.4);
+      border-radius: 100px;
+      padding: 10px 24px;
+      color: var(--white);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s ease;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .btn-logout-corner:hover {
+      background: rgba(20, 168, 176, 0.35);
+      border-color: var(--aqua);
+      transform: translateY(-2px);
+    }
+
+    /* BADGES */
+    .badge-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(20, 168, 176, 0.15);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+      min-width: 260px;
+      filter: grayscale(100%) opacity(0.3);
+      transition: all 0.4s ease;
+    }
+    .badge-card.unlocked {
+      filter: grayscale(0%) opacity(1);
+      border-color: var(--aqua);
+      background: rgba(20, 168, 176, 0.08);
+      box-shadow: 0 10px 30px rgba(20, 168, 176, 0.1);
+      transform: translateY(-2px);
+    }
+    .badge-icon {
+      font-size: 2.2rem;
+      background: rgba(255,255,255,0.05);
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-info h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .badge-info p {
+      font-size: 0.75rem;
+      color: rgba(240, 248, 255, 0.5);
+    }
+  </style>
+</head>
+
+<body class="logged-out">
+
+  <!-- INITIAL LOAD SCREEN -->
+  <div id="loadingOverlay" style="position: fixed; inset: 0; background: var(--deep); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease;">
+    <div style="width: 48px; height: 48px; border: 3px solid rgba(20, 168, 176, 0.2); border-top-color: var(--aqua); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px;"></div>
+    <div style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--aqua); letter-spacing: 4px;">VERIFYING...</div>
+    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+  </div>
+
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <h3 id="authTitle">Welcome Back</h3>
+      
+      <div id="emailAuthSection">
+        <div class="auth-form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="authEmail" placeholder="you@example.com">
+        </div>
+        <div class="auth-form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="authPassword" placeholder="••••••••">
+        </div>
+        
+        <button class="btn-log" id="btnSignIn" style="margin-top: 10px;">Sign In</button>
+        <button class="btn-log" id="btnSignUp" style="margin-top: 10px; display: none;">Create Account</button>
+        
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="auth-action-link" id="linkToggleMode">Need an account? Sign up</button>
+          <button class="auth-action-link" id="linkForgotPassword">Forgot Password?</button>
+        </div>
+      </div>
+
+      <div class="auth-divider"><span>OR</span></div>
+      
+      <button class="btn-google" id="btnGoogleSignIn">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign in with Google
+      </button>
+
+      <div id="authErrorMsg"></div>
+    </div>
+  </div>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="toast" id="toast">✓ Logged!</div>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="ocean-bg"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="waves-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none"
+        style="position:absolute;bottom:0;width:100%;height:100%;">
+        <defs>
+          <linearGradient id="wg1" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:rgba(13,115,119,0.55)" />
+            <stop offset="100%" style="stop-color:rgba(4,21,37,0.9)" />
+          </linearGradient>
+          <linearGradient id="wg2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:rgba(10,42,74,0.75)" />
+            <stop offset="100%" style="stop-color:rgba(4,21,37,1)" />
+          </linearGradient>
+        </defs>
+        <path fill="url(#wg1)" opacity="0.65">
+          <animate attributeName="d" dur="9s" repeatCount="indefinite" values="M0,160 C240,220 480,100 720,160 C960,220 1200,100 1440,160 L1440,320 L0,320 Z;
+                  M0,185 C240,120 480,245 720,185 C960,120 1200,245 1440,185 L1440,320 L0,320 Z;
+                  M0,160 C240,220 480,100 720,160 C960,220 1200,100 1440,160 L1440,320 L0,320 Z" />
+        </path>
+        <path fill="url(#wg2)">
+          <animate attributeName="d" dur="6s" repeatCount="indefinite" values="M0,220 C360,280 720,175 1080,220 C1260,242 1380,200 1440,215 L1440,320 L0,320 Z;
+                  M0,200 C360,158 720,265 1080,200 C1260,178 1380,232 1440,200 L1440,320 L0,320 Z;
+                  M0,220 C360,280 720,175 1080,220 C1260,242 1380,200 1440,215 L1440,320 L0,320 Z" />
+        </path>
+      </svg>
+    </div>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">🌊 Environmental Consciousness</p>
+      <h1 class="hero-title">
+        <span>Plastic</span>
+        <span class="sub">Pulse</span>
+      </h1>
+      <p class="hero-desc">Track every piece. Understand your impact. Protect our oceans — one mindful choice at a time.
+      </p>
+      <a href="#tracker" class="hero-cta">
+        <span>Start Tracking</span>
+        <span>↓</span>
+      </a>
+    </div>
+
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <div id="stats-bar">
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num" data-count="380">0</div>
+        <div class="stat-label">Million tons plastic produced yearly</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-count="8">0</div>
+        <div class="stat-label">Million tons enter oceans annually</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-count="450">0</div>
+        <div class="stat-label">Years for a bottle to decompose</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-count="1">0</div>
+        <div class="stat-label">Garbage truck of plastic per minute</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACKER -->
+  <section id="tracker">
+    <div class="reveal">
+      <p class="section-label">01 — Daily Log</p>
+      <h2 class="section-title">What did you<br><em>use today?</em></h2>
+    </div>
+
+    <div class="tracker-grid reveal">
+      <div class="log-card">
+        <h3>Log Plastic Item</h3>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div class="item-chips" id="categoryChips">
+            <div class="chip active" data-cat="🧴 Personal Care">🧴 Personal Care</div>
+            <div class="chip" data-cat="🍼 Food & Drink">🍼 Food & Drink</div>
+            <div class="chip" data-cat="🛍️ Bags">🛍️ Bags</div>
+            <div class="chip" data-cat="🧹 Household">🧹 Household</div>
+            <div class="chip" data-cat="🥡 Takeaway">🥡 Takeaway</div>
+            <div class="chip" data-cat="📦 Packaging">📦 Packaging</div>
+            <div class="chip" data-cat="♻️ Other">♻️ Other</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Item Name</label>
+          <input type="text" class="form-input" id="itemName" placeholder="e.g. shampoo bottle, straw...">
+        </div>
+
+        <div class="qty-row">
+          <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input type="number" class="form-input" id="itemQty" value="1" min="1" max="999">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Weight (grams)</label>
+            <input type="number" class="form-input" id="itemWeight" placeholder="e.g. 50" min="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quick Weight Presets</label>
+          <div class="item-chips">
+            <div class="chip" data-weight="5">Straw ~5g</div>
+            <div class="chip" data-weight="15">Bag ~15g</div>
+            <div class="chip" data-weight="30">Cap ~30g</div>
+            <div class="chip" data-weight="50">Cup ~50g</div>
+            <div class="chip" data-weight="180">Bottle ~180g</div>
+            <div class="chip" data-weight="250">Container ~250g</div>
+          </div>
+        </div>
+
+        <button class="btn-log" onclick="logItem()">+ Log This Item</button>
+      </div>
+
+      <div class="summary-card">
+        <div class="impact-score">
+          <div class="score-ring">
+            <svg viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0d7377" />
+                  <stop offset="100%" stop-color="#14a8b0" />
+                </linearGradient>
+              </defs>
+              <circle class="ring-track" cx="80" cy="80" r="70" />
+              <circle class="ring-fill" id="ringFill" cx="80" cy="80" r="70" stroke="url(#ringGrad)" />
+            </svg>
+            <div class="score-inner">
+              <div class="score-num" id="todayTotal">0</div>
+              <div class="score-unit">grams today</div>
+            </div>
+          </div>
+          <div class="impact-label" id="impactLabel">Clean start 🌊</div>
+          <div class="impact-sub" id="impactSub">Log your first item below</div>
+        </div>
+
+        <p class="breakdown-title">This Week by Category</p>
+        <div id="breakdownBars">
+          <div class="empty-state">
+            <span>📊</span>
+            <p>Your breakdown appears here as you log items</p>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.07)">
+          <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:0.78rem;margin-bottom:12px;align-items:center;">
+            <span style="color:rgba(240,248,255,0.45)">WEEKLY GOAL (g)</span>
+            <input type="number" id="weeklyGoal" value="500" style="width:70px; background:rgba(255,255,255,0.05); border:1px solid rgba(20,168,176,0.3); border-radius:6px; color:var(--aqua); font-family:'Space Mono',monospace; font-size:0.78rem; text-align:center; padding:4px; outline:none; cursor:none;" onchange="updateGoal()" title="Set your limit and click away">
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:0.78rem;margin-bottom:12px">
+            <span style="color:rgba(240,248,255,0.45)">WEEKLY TOTAL</span>
+            <span style="color:var(--aqua)" id="weekTotal">0g</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:0.78rem;margin-bottom:12px">
+            <span style="color:rgba(240,248,255,0.45)">MONTHLY TOTAL</span>
+            <span style="color:var(--aqua)" id="monthTotal">0g</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:0.78rem">
+            <span style="color:rgba(240,248,255,0.45)">ITEMS LOGGED</span>
+            <span style="color:var(--aqua)" id="totalItems">0</span>
+          </div>
+          <button class="btn-log" style="margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 0.8rem;" onclick="generateImpactReport()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share Impact Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="history">
+    <div class="reveal">
+      <p class="section-label">02 — History</p>
+      <h2 class="section-title">Your <em>journey</em><br>so far</h2>
+    </div>
+
+    <div class="history-grid reveal">
+      <div class="chart-card">
+        <h3>Usage Over Time</h3>
+        <div class="period-tabs">
+          <button class="period-tab active" onclick="switchPeriod('week',this)">Weekly</button>
+          <button class="period-tab" onclick="switchPeriod('month',this)">Monthly</button>
+        </div>
+        <div class="chart-area">
+          <canvas id="usageChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card" style="position: relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem;">
+          <h3 style="margin-bottom:0;">Recent Logs</h3>
+          <button id="btnToggleRecycle" onclick="toggleRecycleBin()" style="background:none; border:none; color:var(--foam); font-family:'Space Mono'; cursor:none; font-size:0.8rem; text-decoration:underline; display:flex; align-items:center; gap:6px;">
+            ♺ <span id="recycleLabel">View Recycle Bin</span>
+          </button>
+        </div>
+        <div class="log-list" id="recentLogs">
+          <div class="empty-state">
+            <span>🌿</span>
+            <p>No items yet. Start tracking above!</p>
+          </div>
+        </div>
+        <div class="log-list" id="recycleBinLogs" style="display:none; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
+          <!-- Deleted Logs will render here -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  <section id="achievements" style="padding: 40px 20px 80px; max-width: 1200px; margin: 0 auto; border-top: 1px solid rgba(20, 168, 176, 0.1);">
+    <div class="reveal">
+      <p class="section-label">03 — Milestones</p>
+      <h2 class="section-title">Earned <em>Badges</em></h2>
+      <div id="badgesGrid" style="display:flex; flex-wrap:wrap; gap:16px; margin-top:40px;">
+        <!-- Badges injected here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="leaderboard" style="padding: 40px 20px 80px; max-width: 1200px; margin: 0 auto; border-top: 1px solid rgba(20, 168, 176, 0.1);">
+    <div class="reveal">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+        <div>
+          <p class="section-label">04 — Global Impact</p>
+          <h2 class="section-title">Top <em>Reducers</em></h2>
+        </div>
+        <button id="btnLoadLb" style="background:none; border:none; color:var(--aqua); font-family:'Space Mono'; cursor:none; font-size:0.9rem;" onclick="if(window.fetchLeaderboard) window.fetchLeaderboard()">↺ Refresh</button>
+      </div>
+      <div id="lbContainer" style="margin-top:40px; background:rgba(255,255,255,0.02); border:1px solid rgba(20,168,176,0.15); border-radius:12px; padding:20px;">
+        <div style="font-family:'Space Mono'; color:var(--foam); font-size:0.8rem;">Loading globally synched data...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIPS -->
+  <section id="tips" style="border-top: 1px solid rgba(20, 168, 176, 0.1);">
+    <div class="tips-inner">
+      <div class="reveal">
+        <p class="section-label">05 — Reduction Tips</p>
+        <h2 class="section-title">Small changes,<br><em>massive impact</em></h2>
+      </div>
+      <div class="tips-grid reveal">
+        <div class="tip-card">
+          <div class="tip-emoji">🧴</div>
+          <h4>Switch to Bar Products</h4>
+          <p>Replace liquid shampoo and body wash with bars. Each person saves up to 11 bottles per year by making this
+            one swap.</p>
+          <span class="tip-impact">−11 bottles/year</span>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🍶</div>
+          <h4>Carry a Reusable Bottle</h4>
+          <p>One reusable bottle eliminates 156 single-use plastic bottles annually. Fill it up, show up, save the
+            ocean.</p>
+          <span class="tip-impact">−156 bottles/year</span>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🛒</div>
+          <h4>Bring Your Own Bag</h4>
+          <p>The average plastic bag is used for 12 minutes but takes 400 years to degrade. A tote bag changes the math
+            forever.</p>
+          <span class="tip-impact">−500 bags/year</span>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🥡</div>
+          <h4>Pack Your Own Lunch</h4>
+          <p>Avoid disposable containers and cutlery by bringing meals from home in reusable containers every day.</p>
+          <span class="tip-impact">−250 items/year</span>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🧊</div>
+          <h4>Buy in Bulk</h4>
+          <p>Buying larger quantities dramatically reduces packaging per unit. Bulk stores let you refill, not rebuy.
+          </p>
+          <span class="tip-impact">−60% packaging</span>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🌿</div>
+          <h4>Vote with Your Wallet</h4>
+          <p>Support plastic-free brands. Each purchase sends a powerful market signal toward a cleaner packaging
+            future.</p>
+          <span class="tip-impact">−100% packaging plastic</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-brand">PlasticPulse</div>
+    <p>Every choice ripples through the ocean. Track. Reduce. Protect. 🌊</p>
+    <p style="margin-top:8px">Built with ♥ for a cleaner planet</p>
+  </footer>
+
+  <button class="btn-logout-corner" id="btnLogout">Sign Out</button>
+
+  <script>
+    // CURSOR
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    (function animateCursor() {
+      cursor.style.left = (mx - 6) + 'px'; cursor.style.top = (my - 6) + 'px';
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = (rx - 18) + 'px'; ring.style.top = (ry - 18) + 'px';
+      requestAnimationFrame(animateCursor);
+    })();
+    document.querySelectorAll('a,button,.chip').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.style.transform = 'scale(2.5)');
+      el.addEventListener('mouseleave', () => cursor.style.transform = 'scale(1)');
+    });
+
+    // PARTICLES
+    const pEl = document.getElementById('particles');
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div'); p.className = 'particle';
+      p.style.cssText = `left:${Math.random() * 100}%;width:${4 + Math.random() * 10}px;height:${4 + Math.random() * 10}px;background:hsl(${180 + Math.random() * 60},60%,${50 + Math.random() * 30}%);animation-duration:${10 + Math.random() * 18}s;animation-delay:-${Math.random() * 18}s`;
+      pEl.appendChild(p);
+    }
+
+    // COUNTER ANIMATION
+    function animateCount(el, target) {
+      const dur = 2000, start = performance.now();
+      (function step(ts) {
+        const p = Math.min((ts - start) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.floor(e * target);
+        if (p < 1) requestAnimationFrame(step);
+      })(performance.now());
+    }
+
+    // INTERSECTION OBSERVERS
+    const obs = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    const statsObs = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('[data-count]').forEach(el => animateCount(el, parseInt(el.dataset.count)));
+        statsObs.disconnect();
+      }
+    }), { threshold: 0.5 });
+    statsObs.observe(document.getElementById('stats-bar'));
+
+    // DATA
+    let currentStorageKey = 'ppLogs';
+    let currentDeletedKey = 'ppDeletedLogs';
+    let logs = [];
+    let deletedLogs = [];
+    let currentGoalKey = 'ppGoal';
+    window.currentGoal = 500;
+    let showingRecycleBin = false;
+    
+    function loadLogs() {
+      logs = JSON.parse(localStorage.getItem(currentStorageKey) || '[]');
+      deletedLogs = JSON.parse(localStorage.getItem(currentDeletedKey) || '[]');
+    }
+    loadLogs();
+
+    function loadGoal() {
+      window.currentGoal = parseInt(localStorage.getItem(currentGoalKey)) || 500;
+      const goalEl = document.getElementById('weeklyGoal');
+      if (goalEl) goalEl.value = window.currentGoal;
+    }
+    
+    function saveLogs() { 
+      localStorage.setItem(currentStorageKey, JSON.stringify(logs)); 
+      saveDeletedLogs();
+    }
+    
+    function saveDeletedLogs() {
+      localStorage.setItem(currentDeletedKey, JSON.stringify(deletedLogs));
+    }
+
+    window.toggleRecycleBin = function() {
+      showingRecycleBin = !showingRecycleBin;
+      const recentEl = document.getElementById('recentLogs');
+      const recycleEl = document.getElementById('recycleBinLogs');
+      if (recentEl) recentEl.style.display = showingRecycleBin ? 'none' : 'block';
+      if (recycleEl) recycleEl.style.display = showingRecycleBin ? 'block' : 'none';
+      const label = document.getElementById('recycleLabel');
+      if (label) label.textContent = showingRecycleBin ? 'View Recent Logs' : 'View Recycle Bin';
+    };
+    
+    window.setLogs = function(newLogs) {
+      logs = newLogs;
+      saveLogs();
+      updateUI();
+    };
+
+    window.updateGoal = function() {
+      const goalEl = document.getElementById('weeklyGoal');
+      if (goalEl) {
+        window.currentGoal = parseInt(goalEl.value) || 1;
+        localStorage.setItem(currentGoalKey, window.currentGoal);
+        if (window.syncGoalToFirebase) window.syncGoalToFirebase(window.currentGoal);
+        updateUI();
+      }
+    };
+
+    let currentBadgeKey = 'ppBadges';
+    window.unlockedBadges = [];
+    
+    const BADGE_DEFS = [
+      { id: 'first_log', icon: '🌱', title: 'First Step', desc: 'Logged your very first item' },
+      { id: 'five_items', icon: '🌿', title: 'Momentum', desc: 'Logged 5 items' },
+      { id: 'heavy_hitter', icon: '⚓', title: 'Heavy Hitter', desc: 'Logged a single item >200g' },
+      { id: 'goal_crusher', icon: '⭐', title: 'Goal Crusher', desc: 'Stayed under weekly limit' },
+      { id: 'ten_items', icon: '🏆', title: 'Track Master', desc: 'Logged 10 items total' },
+      { id: 'twenty_items', icon: '🌍', title: 'Ocean Guardian', desc: 'Logged 20 items total' }
+    ];
+
+    function loadBadges() {
+      window.unlockedBadges = JSON.parse(localStorage.getItem(currentBadgeKey) || '[]');
+      renderBadges();
+    }
+
+    function saveBadges() {
+      localStorage.setItem(currentBadgeKey, JSON.stringify(window.unlockedBadges));
+    }
+
+    function checkBadges() {
+      let newlyUnlocked = false;
+      const total = logs.length;
+      
+      const unlock = (id) => {
+        if (!window.unlockedBadges.includes(id)) {
+           window.unlockedBadges.push(id);
+           newlyUnlocked = true;
+           const b = BADGE_DEFS.find(x => x.id === id);
+           setTimeout(() => showToast(`🏆 Badge Unlocked: ${b.title}!`), 600);
+        }
+      };
+
+      if (total >= 1) unlock('first_log');
+      if (total >= 5) unlock('five_items');
+      if (total >= 10) unlock('ten_items');
+      if (total >= 20) unlock('twenty_items');
+      if (logs.some(l => l.weight >= 200)) unlock('heavy_hitter');
+      if (total >= 3) {
+         const dG = window.currentGoal / 7;
+         const recentG = logs.slice(0,3).reduce((s,l)=>s+l.weight,0);
+         if (recentG <= dG * 3) unlock('goal_crusher');
+      }
+      
+      if (newlyUnlocked) {
+        saveBadges();
+        if (window.syncBadgesToFirebase) window.syncBadgesToFirebase(window.unlockedBadges);
+        renderBadges();
+      }
+    }
+
+    function renderBadges() {
+      const g = document.getElementById('badgesGrid');
+      if (!g) return;
+      g.innerHTML = BADGE_DEFS.map(b => {
+        const isUn = window.unlockedBadges.includes(b.id);
+        return `<div class="badge-card ${isUn ? 'unlocked' : ''}">
+          <div class="badge-icon">${b.icon}</div>
+          <div class="badge-info">
+            <h4>${b.title}</h4>
+            <p>${b.desc}</p>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    window.generateImpactReport = function() {
+      const cvs = document.createElement('canvas');
+      cvs.width = 1080; cvs.height = 1080;
+      const ctx = cvs.getContext('2d');
+      
+      const grd = ctx.createLinearGradient(0, 0, 0, 1080);
+      grd.addColorStop(0, '#041525');
+      grd.addColorStop(1, '#0d7377');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0,0,1080,1080);
+
+      ctx.textAlign = 'center';
+      
+      ctx.fillStyle = '#14a8b0';
+      ctx.font = 'bold 50px Courier New, monospace';
+      ctx.fillText('🌊 PLASTICPULSE IMPACT', 540, 200);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 200px serif';
+      const wt = document.getElementById('weekTotal').textContent;
+      ctx.fillText(wt, 540, 520);
+
+      ctx.fillStyle = '#a8e6cf';
+      ctx.font = 'italic 50px serif';
+      ctx.fillText('Plastic logged this week', 540, 620);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '36px Courier New, monospace';
+      const tItems = logs.length;
+      ctx.fillText(`TOTAL ITEMS MONITORED: ${tItems}`, 540, 800);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '32px sans-serif';
+      ctx.fillText('Make waves. Protect oceans. Track your impact.', 540, 950);
+
+      const link = document.createElement('a');
+      link.download = 'PlasticPulse-Impact.png';
+      link.href = cvs.toDataURL('image/png');
+      link.click();
+      
+      showToast('📸 Report generated!');
+    };
+
+    window.setUserStorageKey = function(uid) {
+      currentStorageKey = uid ? `ppLogs_${uid}` : 'ppLogs';
+      currentDeletedKey = uid ? `ppDeletedLogs_${uid}` : 'ppDeletedLogs';
+      currentGoalKey = uid ? `ppGoal_${uid}` : 'ppGoal';
+      currentBadgeKey = uid ? `ppBadges_${uid}` : 'ppBadges';
+      loadLogs();
+      loadGoal();
+      loadBadges();
+      updateUI();
+    };
+
+    // CATEGORY CHIPS
+    let selectedCat = '🧴 Personal Care';
+    document.querySelectorAll('#categoryChips .chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#categoryChips .chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active'); selectedCat = chip.dataset.cat;
+      });
+    });
+
+    // QUICK WEIGHT CHIPS
+    document.querySelectorAll('[data-weight]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.getElementById('itemWeight').value = chip.dataset.weight;
+        document.querySelectorAll('[data-weight]').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // LOG ITEM
+    function logItem() {
+      const name = document.getElementById('itemName').value.trim();
+      const qty = parseInt(document.getElementById('itemQty').value) || 1;
+      const wg = parseInt(document.getElementById('itemWeight').value);
+      if (!name) { showToast('⚠ Enter an item name'); return; }
+      if (!wg || wg < 1) { showToast('⚠ Enter the weight'); return; }
+      
+      const newLog = { id: Date.now(), name, qty, weight: wg * qty, category: selectedCat, date: new Date().toISOString() };
+      logs.unshift(newLog);
+      saveLogs();
+      
+      if (window.syncLogToFirebase) window.syncLogToFirebase(newLog);
+
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemWeight').value = '';
+      document.getElementById('itemQty').value = '1';
+      document.querySelectorAll('[data-weight]').forEach(c => c.classList.remove('active'));
+      showToast('✓ ' + name + ' — ' + (wg * qty) + 'g logged');
+      updateUI();
+    }
+
+    // TOAST
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // UPDATE UI
+    function updateUI() {
+      const now = new Date(), todayStr = now.toDateString();
+      const weekAgo = new Date(now - 7 * 864e5), monthAgo = new Date(now - 30 * 864e5);
+      const todayL = logs.filter(l => new Date(l.date).toDateString() === todayStr);
+      const weekL = logs.filter(l => new Date(l.date) >= weekAgo);
+      const monthL = logs.filter(l => new Date(l.date) >= monthAgo);
+      const todayG = todayL.reduce((s, l) => s + l.weight, 0);
+      const weekG = weekL.reduce((s, l) => s + l.weight, 0);
+      const monthG = monthL.reduce((s, l) => s + l.weight, 0);
+
+      document.getElementById('todayTotal').textContent = todayG;
+      
+      const dailyGoal = window.currentGoal / 7;
+      const pct = Math.min(todayG / dailyGoal, 1);
+      
+      const ringFill = document.getElementById('ringFill');
+      ringFill.style.strokeDashoffset = 440 - (pct * 440);
+      
+      const stop1 = document.querySelector('#ringGrad stop:first-child');
+      const stop2 = document.querySelector('#ringGrad stop:last-child');
+      if (pct > 0.9) {
+         stop1.setAttribute('stop-color', '#ff6b6b');
+         stop2.setAttribute('stop-color', '#ff9999');
+      } else if (pct > 0.6) {
+         stop1.setAttribute('stop-color', '#ffd166');
+         stop2.setAttribute('stop-color', '#ffe6a0');
+      } else {
+         stop1.setAttribute('stop-color', '#0d7377');
+         stop2.setAttribute('stop-color', '#14a8b0');
+      }
+
+      const impactData = [
+        [dailyGoal, '🚨 Over limit', 'Significant reduction needed'],
+        [dailyGoal * 0.75, '⚠ High usage', 'Consider some swaps'],
+        [dailyGoal * 0.4, '📊 Average day', 'Room to improve'],
+        [dailyGoal * 0.1, '🌿 Doing well', 'Below average daily use'],
+        [0, '🌊 Clean start', 'No plastic today — amazing!']
+      ];
+      const [, lbl, sub] = impactData.find(([t]) => todayG >= t) || impactData[impactData.length - 1];
+      document.getElementById('impactLabel').textContent = lbl;
+      document.getElementById('impactSub').textContent = sub;
+      document.getElementById('weekTotal').textContent = weekG + 'g';
+      document.getElementById('monthTotal').textContent = monthG + 'g';
+      document.getElementById('totalItems').textContent = logs.length;
+
+      updateBreakdown(weekL);
+      updateRecentLogs();
+      drawChart(currentPeriod);
+      checkBadges();
+      if (window.syncProfileStats) window.syncProfileStats(logs.reduce((s,l)=>s+l.weight,0), logs.length);
+    }
+
+    function updateBreakdown(wl) {
+      const el = document.getElementById('breakdownBars');
+      if (!wl.length) { el.innerHTML = '<div class="empty-state"><span>📊</span><p>Your breakdown will appear here</p></div>'; return; }
+      const by = {};
+      wl.forEach(l => { by[l.category] = (by[l.category] || 0) + l.weight; });
+      const max = Math.max(...Object.values(by));
+      el.innerHTML = Object.entries(by).sort((a, b) => b[1] - a[1]).map(([cat, w]) => `
+    <div class="breakdown-item">
+      <div class="breakdown-header"><span class="breakdown-name">${cat}</span><span class="breakdown-val">${w}g</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(w / max) * 100}%"></div></div>
+    </div>`).join('');
+    }
+
+    const catIcons = { '🧴 Personal Care': '🧴', '🍼 Food & Drink': '🍼', '🛍️ Bags': '🛍️', '🧹 Household': '🧹', '🥡 Takeaway': '🥡', '📦 Packaging': '📦', '♻️ Other': '♻️' };
+
+    function updateRecentLogs() {
+      const el = document.getElementById('recentLogs');
+      if (!logs.length) { el.innerHTML = '<div class="empty-state"><span>🌿</span><p>No items yet. Start tracking above!</p></div>'; }
+      else {
+        el.innerHTML = logs.slice(0, 10).map(l => `
+      <div class="log-entry">
+        <div class="log-icon">${catIcons[l.category] || '♻️'}</div>
+        <div class="log-info">
+          <div class="log-item-name">${l.name}${l.qty > 1 ? ' ×' + l.qty : ''}</div>
+          <div class="log-item-date">${new Date(l.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+        <div class="log-item-weight">${l.weight}g</div>
+        <button class="log-delete" onclick="deleteLog(${l.id})">×</button>
+      </div>`).join('');
+      }
+
+      const recEl = document.getElementById('recycleBinLogs');
+      if (!deletedLogs.length) { 
+        recEl.innerHTML = '<div class="empty-state"><span>🗑️</span><p>Recycle bin is empty.</p></div>'; 
+      } else {
+        recEl.innerHTML = deletedLogs.map(l => `
+      <div class="log-entry" style="opacity:0.7;">
+        <div class="log-icon" style="filter:grayscale(1);">${catIcons[l.category] || '♻️'}</div>
+        <div class="log-info">
+          <div class="log-item-name" style="text-decoration:line-through">${l.name}${l.qty > 1 ? ' ×' + l.qty : ''}</div>
+          <div class="log-item-date">${new Date(l.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+        <div class="log-item-weight" style="text-decoration:line-through">${l.weight}g</div>
+        <button class="btn-log" style="padding:4px 10px; font-size:0.7rem; margin-left:12px; width:auto; border-radius:4px;" onclick="restoreLog(${l.id})">Restore</button>
+      </div>`).join('') + '<button class="btn-log" style="margin-top:16px; background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.3); color:#ff6b6b;" onclick="clearRecycleBin()">Empty Recycle Bin</button>';
+      }
+    }
+
+    function deleteLog(id) {
+      const idx = logs.findIndex(l => l.id === id);
+      if (idx !== -1) {
+        deletedLogs.unshift(logs[idx]); // push to recycle bin
+        logs.splice(idx, 1);
+        saveLogs();
+        saveDeletedLogs();
+        if (window.removeLogFromFirebase) window.removeLogFromFirebase(id);
+        updateUI(); 
+        showToast('Item moved to Recycle Bin');
+      }
+    }
+
+    window.restoreLog = function(id) {
+      const idx = deletedLogs.findIndex(l => l.id === id);
+      if (idx !== -1) {
+        const item = deletedLogs[idx];
+        logs.unshift(item);
+        logs.sort((a,b) => new Date(b.date) - new Date(a.date));
+        deletedLogs.splice(idx, 1);
+        saveLogs();
+        saveDeletedLogs();
+        if (window.syncLogToFirebase) window.syncLogToFirebase(item);
+        updateUI();
+        showToast('Item restored successfully');
+      }
+    };
+
+    window.clearRecycleBin = function() {
+      if (confirm("Are you sure you want to permanently delete these items?")) {
+         deletedLogs = [];
+         saveDeletedLogs();
+         updateUI();
+         showToast('Recycle bin emptied');
+      }
+    };
+
+    // CHART
+    let currentPeriod = 'week';
+    function switchPeriod(p, btn) {
+      currentPeriod = p;
+      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active'); drawChart(p);
+    }
+
+    function drawChart(period) {
+      const canvas = document.getElementById('usageChart');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      const W = rect.width, H = rect.height;
+      if (W === 0 || H === 0) return;
+      ctx.clearRect(0, 0, W, H);
+
+      const now = new Date(); let labels = [], data = [];
+      if (period === 'week') {
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now); d.setDate(d.getDate() - i);
+          labels.push(d.toLocaleDateString('en-GB', { weekday: 'short' }));
+          data.push(logs.filter(l => new Date(l.date).toDateString() === d.toDateString()).reduce((s, l) => s + l.weight, 0));
+        }
+      } else {
+        for (let w = 0; w < 6; w++) {
+          const from = new Date(now); from.setDate(from.getDate() - 25 + w * 5);
+          const to = new Date(from); to.setDate(to.getDate() + 5);
+          labels.push(from.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+          data.push(logs.filter(l => { const d = new Date(l.date); return d >= from && d < to; }).reduce((s, l) => s + l.weight, 0));
+        }
+      }
+
+      const max = Math.max(...data, 50);
+      const pad = { t: 20, r: 20, b: 36, l: 46 };
+      const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+
+      // grid
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.t + cH * (1 - i / 4);
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cW, y); ctx.stroke();
+        ctx.fillStyle = 'rgba(240,248,255,0.28)'; ctx.font = '9px monospace'; ctx.textAlign = 'right';
+        ctx.fillText(Math.round(max * i / 4) + 'g', pad.l - 6, y + 3);
+      }
+
+      const pts = data.map((v, i) => ({ x: pad.l + i * (cW / (data.length - 1)), y: pad.t + cH * (1 - v / max) }));
+
+      // fill
+      const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + cH);
+      grad.addColorStop(0, 'rgba(20,168,176,0.28)'); grad.addColorStop(1, 'rgba(20,168,176,0)');
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        const mx2 = (pts[i - 1].x + pts[i].x) / 2, my2 = (pts[i - 1].y + pts[i].y) / 2;
+        ctx.quadraticCurveTo(pts[i - 1].x, pts[i - 1].y, mx2, my2);
+      }
+      ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+      ctx.lineTo(pts[pts.length - 1].x, pad.t + cH); ctx.lineTo(pts[0].x, pad.t + cH);
+      ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+
+      // line
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        const mx2 = (pts[i - 1].x + pts[i].x) / 2, my2 = (pts[i - 1].y + pts[i].y) / 2;
+        ctx.quadraticCurveTo(pts[i - 1].x, pts[i - 1].y, mx2, my2);
+      }
+      ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+      ctx.strokeStyle = 'rgba(20,168,176,0.9)'; ctx.lineWidth = 2.5; ctx.stroke();
+
+      // dots
+      pts.forEach((p, i) => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = data[i] > 0 ? '#14a8b0' : 'rgba(255,255,255,0.1)';
+        ctx.fill(); ctx.strokeStyle = '#041525'; ctx.lineWidth = 2; ctx.stroke();
+      });
+
+      // x labels
+      ctx.fillStyle = 'rgba(240,248,255,0.38)'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+      labels.forEach((l, i) => ctx.fillText(l, pts[i].x, H - 8));
+    }
+
+    // INIT
+    updateUI();
+    window.addEventListener('resize', () => drawChart(currentPeriod));
+
+    // Enter key on input
+    document.getElementById('itemName').addEventListener('keydown', e => { if (e.key === 'Enter') logItem(); });
+  </script>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      createUserWithEmailAndPassword, 
+      sendPasswordResetEmail, 
+      GoogleAuthProvider, 
+      signInWithPopup, 
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      getDocs, 
+      doc, 
+      setDoc, 
+      deleteDoc,
+      query,
+      orderBy,
+      limit,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    // TODO: Replace with your actual Firebase project configuration
+    const firebaseConfig = {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID
+    };
+
+    const isPlaceholderConfig = firebaseConfig.apiKey === "YOUR_API_KEY";
+
+    let app, auth, db;
+    try {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+    } catch(e) {
+      console.error("Firebase init error:", e);
+    }
+
+    // FIREBASE SYNC FUNCTIONS
+    window.currentUser = null;
+
+    window.syncLogToFirebase = async function(log) {
+      if (!window.currentUser || !db) return;
+      try {
+        await setDoc(doc(db, "users", window.currentUser.uid, "logs", String(log.id)), log);
+      } catch(e) { console.error("Error saving to Firebase:", e); }
+    };
+
+    window.removeLogFromFirebase = async function(id) {
+      if (!window.currentUser || !db) return;
+      try {
+        await deleteDoc(doc(db, "users", window.currentUser.uid, "logs", String(id)));
+      } catch(e) { console.error("Error deleting from Firebase:", e); }
+    };
+
+    window.syncGoalToFirebase = async function(goal) {
+      if (!window.currentUser || !db) return;
+      try {
+        await setDoc(doc(db, "users", window.currentUser.uid), { weeklyLimit: goal }, { merge: true });
+      } catch(e) { console.error("Error saving goal:", e); }
+    };
+
+    window.syncBadgesToFirebase = async function(badges) {
+      if (!window.currentUser || !db) return;
+      try {
+        await setDoc(doc(db, "users", window.currentUser.uid), { badges }, { merge: true });
+      } catch(e) { console.error("Error saving badges:", e); }
+    };
+
+    window.syncProfileStats = async function(totalGrams, numItems) {
+      if (!window.currentUser || !db) return;
+      try {
+        let dName = 'Anonymous Hero';
+        if (window.currentUser.displayName) dName = window.currentUser.displayName;
+        else if (window.currentUser.email) dName = window.currentUser.email.split('@')[0];
+        
+        await setDoc(doc(db, "leaderboard", window.currentUser.uid), {
+           displayName: dName,
+           totalGrams: totalGrams,
+           items: numItems,
+           lastUpdated: new Date().toISOString()
+        }, { merge: true });
+      } catch(e) { console.error("Error saving leaderboard stats:", e); }
+    };
+
+    let lbUnsubscribe = null;
+
+    window.fetchLeaderboard = function() {
+      const container = document.getElementById('lbContainer');
+      if (!container) return;
+      if (!db) { container.innerHTML = '<div style="color:var(--coral)">Firebase not connected</div>'; return; }
+      
+      container.innerHTML = '<div style="color:var(--aqua); font-family:\'Space Mono\'">Connecting to live global satellite...</div>';
+      
+      if (lbUnsubscribe) lbUnsubscribe(); // Stop old listeners
+      
+      const q = query(collection(db, "leaderboard"), orderBy("items", "desc"), limit(10));
+      
+      lbUnsubscribe = onSnapshot(q, (snapshot) => {
+        let realUsers = [];
+        snapshot.forEach(doc => {
+           realUsers.push({ id: doc.id, ...doc.data() });
+        });
+        
+        const mockHeroes = [
+          { id: 'bot1', displayName: "OceanLover_99", totalGrams: 1450, items: 42, isBot: true },
+          { id: 'bot2', displayName: "SeaSaver2024", totalGrams: 890, items: 31, isBot: true },
+          { id: 'bot3', displayName: "EcoWarrior", totalGrams: 2100, items: 28, isBot: true },
+          { id: 'bot4', displayName: "PlanetFirst", totalGrams: 540, items: 15, isBot: true },
+          { id: 'bot5', displayName: "ClearSeas", totalGrams: 1100, items: 12, isBot: true }
+        ];
+        
+        let allUsers = [...realUsers];
+        if (realUsers.length < 5) {
+           allUsers = [...realUsers, ...mockHeroes.slice(0, 5 - realUsers.length)];
+        }
+        
+        allUsers.sort((a, b) => b.items - a.items);
+        
+        let html = '<table style="width:100%; border-collapse:collapse; text-align:left;">';
+        html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5); font-family:\'Space Mono\'; font-size:0.8rem;">';
+        html += '<th style="padding:10px 0;">RANK</th><th style="padding:10px 0;">WARRIOR</th><th style="padding:10px 0;text-align:right;">TOTAL USED (g)</th><th style="padding:10px 0;text-align:right;">ITEMS LOGGED</th></tr>';
+        
+        allUsers.forEach((data, index) => {
+           let rank = index + 1;
+           const isMe = (window.currentUser && data.id === window.currentUser.uid);
+           const isBot = data.isBot;
+           
+           html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); ${isMe ? 'background:rgba(20,168,176,0.1)' : ''} ${isBot ? 'opacity:0.6;' : ''}">
+             <td style="padding:16px 8px; font-family:\'Space Mono\'; color:${isBot ? 'rgba(255,255,255,0.3)' : 'var(--aqua)'}">#${rank}</td>
+             <td style="padding:16px 8px; font-weight:bold;">${data.displayName} ${isMe ? '<span style="color:var(--aqua); font-size:0.7rem;">(You)</span>' : ''}</td>
+             <td style="padding:16px 8px; text-align:right; font-family:\'Space Mono\'; color:var(--foam)">${data.totalGrams || 0}g</td>
+             <td style="padding:16px 8px; text-align:right; font-family:\'Space Mono\'; opacity:0.7">${data.items || 0}</td>
+           </tr>`;
+        });
+
+        html += '</table>';
+        container.innerHTML = html;
+        
+      }, (error) => {
+        console.error("Leaderboard Live Sync Error:", error);
+        container.innerHTML = '<div style="color:var(--coral); font-family:\'Space Mono\'; padding: 12px; background:rgba(255,0,0,0.1); border-radius:8px;"><b>🚨 CLOUD CONNECTION REJECTED</b><br><br>Your Firebase Security Rules are blocking access.<br>1. Go to Firebase Console -> Firestore Database<br>2. Click on the <b>Rules</b> tab<br>3. Change it to: <code>allow read, write: if true;</code><br>4. Click Publish and refresh the page!</div>';
+      });
+    };
+
+    window.fetchLogsFromFirebase = async function() {
+      if (!window.currentUser || !db) return;
+      try {
+        const snapshot = await getDocs(collection(db, "users", window.currentUser.uid, "logs"));
+        const fbLogs = [];
+        snapshot.forEach(d => fbLogs.push(d.data()));
+        if (fbLogs.length > 0) {
+           fbLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
+           if (typeof window.setLogs === 'function') {
+             window.setLogs(fbLogs);
+           }
+        }
+      } catch(e) { console.error("Error fetching logs from Firebase:", e); }
+    };
+
+    const authOverlay = document.getElementById('authOverlay');
+    const authTitle = document.getElementById('authTitle');
+    const btnSignIn = document.getElementById('btnSignIn');
+    const btnSignUp = document.getElementById('btnSignUp');
+    const btnGoogleSignIn = document.getElementById('btnGoogleSignIn');
+    const linkToggleMode = document.getElementById('linkToggleMode');
+    const linkForgotPassword = document.getElementById('linkForgotPassword');
+    const btnLogout = document.getElementById('btnLogout');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authErrorMsg = document.getElementById('authErrorMsg');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    
+    let isSignUpMode = false;
+
+    function showAuthError(msg, isSuccess = false) {
+      if (isPlaceholderConfig && !isSuccess) {
+        msg = "Firebase API keys required. Please add your config in the code to authenticate.";
+      }
+      authErrorMsg.textContent = msg;
+      authErrorMsg.style.color = isSuccess ? "var(--foam)" : "var(--coral)";
+    }
+
+    linkToggleMode.addEventListener('click', () => {
+      isSignUpMode = !isSignUpMode;
+      if (isSignUpMode) {
+        authTitle.textContent = "Create Account";
+        btnSignIn.style.display = 'none';
+        btnSignUp.style.display = 'block';
+        linkToggleMode.textContent = "Already have an account? Sign in";
+      } else {
+        authTitle.textContent = "Welcome Back";
+        btnSignIn.style.display = 'block';
+        btnSignUp.style.display = 'none';
+        linkToggleMode.textContent = "Need an account? Sign up";
+      }
+      authErrorMsg.textContent = "";
+    });
+
+    btnSignIn.addEventListener('click', () => {
+      if (!auth) { showAuthError("Firebase not configured"); return; }
+      signInWithEmailAndPassword(auth, authEmail.value, authPassword.value)
+        .catch(error => showAuthError(error.message));
+    });
+
+    btnSignUp.addEventListener('click', () => {
+      if (!auth) { showAuthError("Firebase not configured"); return; }
+      createUserWithEmailAndPassword(auth, authEmail.value, authPassword.value)
+        .catch(error => showAuthError(error.message));
+    });
+
+    linkForgotPassword.addEventListener('click', () => {
+      if (!auth) { showAuthError("Firebase not configured"); return; }
+      const email = authEmail.value;
+      if (!email) {
+        showAuthError("Please enter your email above to reset password.");
+        return;
+      }
+      sendPasswordResetEmail(auth, email)
+        .then(() => showAuthError("Password reset email sent! Check your inbox.", true))
+        .catch(error => showAuthError(error.message));
+    });
+
+    btnGoogleSignIn.addEventListener('click', () => {
+      if (!auth) { showAuthError("Firebase not configured"); return; }
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider).catch(error => showAuthError(error.message));
+    });
+
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        if (auth) signOut(auth);
+      });
+    }
+
+    if (auth) {
+      onAuthStateChanged(auth, (user) => {
+        if (loadingOverlay) {
+          loadingOverlay.style.opacity = '0';
+          setTimeout(() => loadingOverlay.style.display = 'none', 500);
+        }
+
+        if (user) {
+          window.currentUser = user;
+          if (typeof window.setUserStorageKey === 'function') window.setUserStorageKey(user.uid);
+          
+          window.fetchLogsFromFirebase();
+          if (window.fetchLeaderboard) window.fetchLeaderboard();
+          
+          authOverlay.classList.add('hidden');
+          document.body.classList.remove('logged-out');
+          
+          let displayName = user.displayName || user.email || 'User';
+          
+          // Use globally available showToast function to greet the user
+          if (typeof showToast === 'function') {
+             showToast(`Welcome, ${displayName}!`);
+          }
+        } else {
+          window.currentUser = null;
+          if (typeof window.setUserStorageKey === 'function') window.setUserStorageKey(null);
+          
+          authOverlay.classList.remove('hidden');
+          document.body.classList.add('logged-out');
+          authEmail.value = '';
+          authPassword.value = '';
+          authErrorMsg.textContent = '';
+          if (isPlaceholderConfig) {
+             showAuthError("Configuration Required: Provide your Firebase keys in the code.", false);
+          }
+        }
+      });
+    } else {
+      if (loadingOverlay) {
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => loadingOverlay.style.display = 'none', 500);
+      }
+      showAuthError("Firebase initialization failed.");
+    }
+  </script>
+</body>
+
+</html>
